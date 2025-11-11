@@ -1,0 +1,101 @@
+---
+# Default variables for firewalld role
+
+# Control whether to manage kernel params/modules needed by firewalld
+firewalld_manage_kernel: true
+
+# Kernel modules commonly needed for modern nftables-based firewalld
+# Adjust per environment as needed
+firewalld_required_kernel_modules:
+  - nf_conntrack
+  - nf_tables
+
+# Optional sysctl settings to apply via kernel configuration role
+firewalld_kernel_sysctl: {}
+
+# Service name for firewalld
+firewalld_service_name: firewalld
+
+# Package requirements per OS family
+firewalld_required_packages_map:
+  Debian:
+    - firewalld
+  Ubuntu:
+    - firewalld
+  RedHat:
+    - firewalld
+  Rocky:
+    - firewalld
+  Fedora:
+    - firewalld
+
+# Resolved package list for current host
+firewalld_required_packages: "{{ firewalld_required_packages_map[ansible_os_family] | default(['firewalld']) }}"
+
+# Zones to ensure present (permanent)
+firewalld_zones_present: []
+
+# Control reloading after zone changes
+firewalld_reload_after_zone_changes: true
+
+# Manage services in zones
+# - name: service name (e.g., ssh, http)
+#   zone: zone name (default: public)
+#   state: enabled|disabled (default: enabled)
+#   permanent: true|false (default: true)
+#   immediate: true|false (default: false)
+firewalld_services: []
+
+# Manage ports in zones
+# - port: "8080/tcp" or "161-162/udp"
+#   zone: zone name (default: public)
+#   state: enabled|disabled (default: enabled)
+#   permanent: true|false (default: true)
+#   immediate: true|false (default: false)
+firewalld_ports: []
+
+# Manage rich rules in zones
+# - rich_rule: "rule family=ipv4 source address=10.0.0.0/8 accept"
+#   zone: zone name (default: public)
+#   state: enabled|disabled (default: enabled)
+#   permanent: true|false (default: true)
+#   immediate: true|false (default: false)
+firewalld_rich_rules: []
+
+# Sources to add to zones
+# - source: "192.0.2.0/24"
+#   zone: zone name
+#   state: enabled|disabled (default: enabled)
+#   permanent: true|false (default: true)
+firewalld_sources: []
+
+# Interfaces to add to zones
+# - interface: "eth0"
+#   zone: zone name
+#   state: enabled|disabled (default: enabled)
+#   permanent: true|false (default: true)
+firewalld_interfaces: []
+
+# Masquerade settings per zone
+# - zone: zone name
+#   state: enabled|disabled (default: enabled)
+#   permanent: true|false (default: true)
+firewalld_masquerade: []
+
+# ICMP blocks per zone
+# - name: icmp type (e.g., echo-request)
+#   zone: zone name
+#   state: enabled|disabled (default: enabled)
+#   permanent: true|false (default: true)
+firewalld_icmp_blocks: []
+
+# Forward ports per zone
+# - zone: zone name
+#   state: enabled|disabled (default: enabled)
+#   permanent: true|false (default: true)
+#   immediate: true|false (default: false)
+#   port: "8080"          # source port
+#   proto: "tcp"          # protocol
+#   toport: "80"          # destination port
+#   toaddr: "10.0.0.10"   # optional destination address
+firewalld_forward_ports: []

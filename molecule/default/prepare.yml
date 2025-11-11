@@ -1,0 +1,51 @@
+---
+
+- name: Prepare
+  hosts: all
+  gather_facts: true
+  become: false
+
+  tasks:
+    - name: Ensure /tmp exists
+      ansible.builtin.file:
+        path: /tmp
+        state: directory
+        mode: '0777'
+
+    - name: Verify Python 3 is available
+      ansible.builtin.assert:
+        that:
+          - ansible_python_version is defined
+          - ansible_python_version is version('3.0', '>=')
+        fail_msg: "Python 3 is required but not available"
+        success_msg: "Python {{ ansible_python_version }} is available"
+
+    - name: Update apt cache on Debian/Ubuntu when apt is available
+      ansible.builtin.apt:
+        update_cache: yes
+        cache_valid_time: 3600
+      when: ansible_os_family == "Debian" and (ansible_pkg_mgr is defined) and (ansible_pkg_mgr | default('unknown')) != 'unknown'
+
+    - name: Install procps-ng package (RHEL/Fedora/AlmaLinux)
+      ansible.builtin.package:
+        name: procps-ng
+        state: present
+      when: ansible_os_family == "RedHat" and (ansible_pkg_mgr is defined) and (ansible_pkg_mgr | default('unknown')) != 'unknown'
+
+    - name: Install procps package (Debian/Ubuntu)
+      ansible.builtin.package:
+        name: procps
+        state: present
+      when: ansible_os_family == "Debian" and (ansible_pkg_mgr is defined) and (ansible_pkg_mgr | default('unknown')) != 'unknown'
+
+    - name: Install procps-ng package (RHEL/Fedora/AlmaLinux)
+      ansible.builtin.package:
+        name: python3-rpm
+        state: present
+      when: ansible_os_family == "RedHat" and (ansible_pkg_mgr is defined) and (ansible_pkg_mgr | default('unknown')) != 'unknown'
+
+    - name: Ensure firewalld package is present when package manager available
+      ansible.builtin.package:
+        name: firewalld
+        state: present
+      when: (ansible_pkg_mgr is defined) and (ansible_pkg_mgr | default('unknown')) != 'unknown'

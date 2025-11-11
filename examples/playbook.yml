@@ -1,0 +1,46 @@
+---
+# Example Playbook: Firewalld Role Usage
+
+- hosts: all
+  become: true
+  roles:
+    - role: iamenr0s.ansible_role_firewalld
+      vars:
+        firewalld_manage_kernel: true
+        firewalld_required_kernel_modules:
+          - nf_conntrack
+          - nf_tables
+        firewalld_kernel_sysctl:
+          net.ipv4.ip_forward: 0
+
+        # Zones to create permanently
+        firewalld_zones_present:
+          - public
+
+        # Services
+        firewalld_services:
+          - { name: ssh, zone: public }
+
+        # Ports
+        firewalld_ports:
+          - { port: "8080/tcp", zone: public }
+
+        # Rich rules
+        firewalld_rich_rules:
+          - { rich_rule: "rule family=ipv4 source address=10.0.0.0/8 accept", zone: public }
+
+        # Sources and interfaces
+        firewalld_sources:
+          - { source: "192.0.2.0/24", zone: public }
+        firewalld_interfaces:
+          - { interface: "eth0", zone: public }
+
+        # Masquerade and ICMP
+        firewalld_masquerade:
+          - { zone: public }
+        firewalld_icmp_blocks:
+          - { name: echo-request, zone: public, state: disabled }
+
+        # Port forwarding
+        firewalld_forward_ports:
+          - { zone: public, port: "8080", proto: "tcp", toport: "80", toaddr: "10.0.0.10" }

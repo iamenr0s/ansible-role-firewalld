@@ -1,0 +1,40 @@
+---
+
+galaxy_info:
+  role_name: ansible_role_firewalld
+  author: "iamenr0s"
+  description: "Manage firewalld on Linux hosts."
+  license: MIT
+  min_ansible_version: "2.9"
+  platforms:
+    - name: "Debian"
+      versions:
+        - "bullseye"
+        - "bookworm"
+        - "trixie"
+    - name: "EL"
+      versions:
+        - "8"
+        - "9"
+        - "10"
+    - name: "Fedora"
+      versions:
+        - "39"
+        - "40"
+        - "41"
+        - "42"
+    # Rocky Linux is covered under EL support; remove explicit entry to satisfy
+    # ansible-lint schema expectations for platforms.
+    - name: "Ubuntu"
+      versions:
+        - "focal"
+        - "jammy"
+        - "kinetic"
+  galaxy_tags:
+    - firewalld
+    - network
+    - security
+
+dependencies: []
+collections:
+  - ansible.posix

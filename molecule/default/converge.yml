@@ -1,0 +1,42 @@
+---
+
+- name: Converge
+  hosts: all
+  gather_facts: true
+
+  roles:
+    - role: iamenr0s.ansible_role_firewalld
+      vars:
+        firewalld_manage_kernel: true
+        firewalld_required_kernel_modules:
+          - nf_conntrack
+          - nf_tables
+
+        # Keep zone creation minimal for containers
+        firewalld_zones_present:
+          - public
+
+        firewalld_services:
+          - { name: ssh, zone: public }
+          - { name: dhcpv6-client, zone: public, state: disabled }
+
+        firewalld_ports:
+          - { port: "8080/tcp", zone: public }
+
+        firewalld_rich_rules:
+          - { rich_rule: "rule family=ipv4 source address=10.0.0.0/8 accept", zone: public }
+
+        firewalld_sources:
+          - { source: "192.168.0.0/24", zone: public }
+
+        firewalld_interfaces:
+          - { interface: "eth0", zone: public }
+
+        firewalld_masquerade:
+          - { zone: public }
+
+        firewalld_icmp_blocks:
+          - { name: echo-request, zone: public, state: disabled }
+
+        firewalld_forward_ports:
+          - { zone: public, port: "8080", proto: "tcp", toport: "80", toaddr: "10.0.0.10" }

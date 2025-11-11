@@ -1,0 +1,8 @@
+---
+
+# Role - Handlers
+
+- name: Restart firewalld
+  ansible.builtin.service:
+    name: "{{ firewalld_service_name }}"
+    state: restarted

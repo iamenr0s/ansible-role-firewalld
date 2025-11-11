@@ -1,0 +1,145 @@
+---
+
+# Role - Main Tasks
+- name: Optionally ensure kernel modules and sysctl for firewalld
+  ansible.builtin.include_role:
+    name: ansible-role-kernel-configuration
+  vars:
+    kernel_modules: "{{ firewalld_required_kernel_modules }}"
+    kernel_sysctl: "{{ firewalld_kernel_sysctl }}"
+  when: firewalld_manage_kernel | bool
+
+- name: Resolve and install required packages
+  when: (ansible_pkg_mgr is defined) and (ansible_pkg_mgr | default('unknown')) != 'unknown'
+  block:
+    - name: Gather installed package facts
+      ansible.builtin.package_facts:
+        manager: auto
+
+    - name: Compute missing firewalld packages
+      ansible.builtin.set_fact:
+        firewalld_missing_packages: >-
+          {{ firewalld_required_packages
+             | reject('in', (ansible_facts.packages | default({})).keys() | list)
+             | list }}
+  rescue:
+    - name: Fallback when package facts unavailable
+      ansible.builtin.set_fact:
+        firewalld_missing_packages: "{{ firewalld_required_packages }}"
+  always:
+    - name: Install missing packages via package management role
+      ansible.builtin.include_role:
+        name: ansible-role-pkg-management
+      vars:
+        pkg_list: "{{ firewalld_missing_packages }}"
+        pkg_state: present
+      when: (firewalld_missing_packages | default([]) | length > 0)
+
+- name: Gather service facts
+  ansible.builtin.service_facts:
+
+- name: Set firewalld service availability flag
+  ansible.builtin.set_fact:
+    firewalld_service_available: "{{ (ansible_facts.services is defined) and (firewalld_service_name in ansible_facts.services) }}"
+
+- name: Ensure firewalld service is enabled and running
+  ansible.builtin.service:
+    name: "{{ firewalld_service_name }}"
+    state: started
+    enabled: true
+  when: firewalld_service_available | bool
+
+- name: Ensure requested zones are present (permanent)
+  ansible.posix.firewalld:
+    zone: "{{ item }}"
+    state: present
+    permanent: true
+  loop: "{{ firewalld_zones_present }}"
+  register: firewalld_zone_create
+  when: firewalld_zones_present | length > 0 and firewalld_service_available | bool
+
+- name: Reload firewalld after zone creation
+  ansible.builtin.service:
+    name: "{{ firewalld_service_name }}"
+    state: reloaded
+  when: firewalld_reload_after_zone_changes | bool and (firewalld_zone_create is changed) and firewalld_service_available | bool
+
+- name: Manage firewalld services
+  ansible.posix.firewalld:
+    service: "{{ item.name }}"
+    zone: "{{ item.zone | default('public') }}"
+    state: "{{ item.state | default('enabled') }}"
+    permanent: "{{ item.permanent | default(true) }}"
+    immediate: "{{ item.immediate | default(false) }}"
+  loop: "{{ firewalld_services }}"
+  when: firewalld_services | length > 0 and firewalld_service_available | bool
+
+- name: Manage firewalld ports
+  ansible.posix.firewalld:
+    port: "{{ item.port }}"
+    zone: "{{ item.zone | default('public') }}"
+    state: "{{ item.state | default('enabled') }}"
+    permanent: "{{ item.permanent | default(true) }}"
+    immediate: "{{ item.immediate | default(false) }}"
+  loop: "{{ firewalld_ports }}"
+  when: firewalld_ports | length > 0 and firewalld_service_available | bool
+
+- name: Manage firewalld rich rules
+  ansible.posix.firewalld:
+    rich_rule: "{{ item.rich_rule }}"
+    zone: "{{ item.zone | default('public') }}"
+    state: "{{ item.state | default('enabled') }}"
+    permanent: "{{ item.permanent | default(true) }}"
+    immediate: "{{ item.immediate | default(false) }}"
+  loop: "{{ firewalld_rich_rules }}"
+  when: firewalld_rich_rules | length > 0 and firewalld_service_available | bool
+
+- name: Manage firewalld sources
+  ansible.posix.firewalld:
+    source: "{{ item.source }}"
+    zone: "{{ item.zone | default('public') }}"
+    state: "{{ item.state | default('enabled') }}"
+    permanent: "{{ item.permanent | default(true) }}"
+  loop: "{{ firewalld_sources }}"
+  when: firewalld_sources | length > 0 and firewalld_service_available | bool
+
+- name: Manage firewalld interfaces
+  ansible.posix.firewalld:
+    interface: "{{ item.interface }}"
+    zone: "{{ item.zone | default('public') }}"
+    state: "{{ item.state | default('enabled') }}"
+    permanent: "{{ item.permanent | default(true) }}"
+  loop: "{{ firewalld_interfaces }}"
+  when: firewalld_interfaces | length > 0 and firewalld_service_available | bool
+
+- name: Manage masquerade settings
+  ansible.posix.firewalld:
+    zone: "{{ item.zone | default('public') }}"
+    masquerade: true
+    state: "{{ item.state | default('enabled') }}"
+    permanent: "{{ item.permanent | default(true) }}"
+  loop: "{{ firewalld_masquerade }}"
+  when: firewalld_masquerade | length > 0 and firewalld_service_available | bool
+
+- name: Manage ICMP blocks
+  ansible.posix.firewalld:
+    icmp_block: "{{ item.name }}"
+    zone: "{{ item.zone | default('public') }}"
+    state: "{{ item.state | default('enabled') }}"
+    permanent: "{{ item.permanent | default(true) }}"
+  loop: "{{ firewalld_icmp_blocks }}"
+  when: firewalld_icmp_blocks | length > 0 and firewalld_service_available | bool
+
+- name: Manage port forwarding rules
+  ansible.posix.firewalld:
+    zone: "{{ item.zone | default('public') }}"
+    state: "{{ item.state | default('enabled') }}"
+    permanent: "{{ item.permanent | default(true) }}"
+    immediate: "{{ item.immediate | default(false) }}"
+    port_forward:
+      - port: "{{ item.port }}"
+        proto: "{{ item.proto }}"
+        toport: "{{ item.toport }}"
+        toaddr: "{{ item.toaddr | default('') }}"
+  loop: "{{ firewalld_forward_ports }}"
+  when: firewalld_forward_ports | length > 0 and firewalld_service_available | bool
