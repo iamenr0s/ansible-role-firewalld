@@ -4,6 +4,22 @@
 # Control whether to manage kernel params/modules needed by firewalld
 firewalld_manage_kernel: true
 
+firewalld_manage_selinux: false
+firewalld_selinux_state: null
+firewalld_selinux_policy: null
+firewalld_selinux_booleans: []
+
+firewalld_selinux_required_packages_map:
+  Debian: []
+  Ubuntu: []
+  RedHat:
+    - python3-libsemanage
+  Rocky:
+    - python3-libsemanage
+  Fedora:
+    - python3-libsemanage
+firewalld_selinux_required_packages: "{{ firewalld_selinux_required_packages_map[ansible_os_family] | default([]) }}"
+
 # Kernel modules commonly needed for modern nftables-based firewalld
 # Adjust per environment as needed
 firewalld_required_kernel_modules:
