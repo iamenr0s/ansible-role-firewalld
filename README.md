@@ -14,6 +14,7 @@ Manage `firewalld` installation and service state, with optional kernel paramete
 - Applies services, ports (single/range), and rich rules per zone
 - Manages sources and interfaces per zone
 - Configures masquerade, ICMP blocks, and port forwarding
+- Optionally manages SELinux state and booleans
 
 ## Requirements
 
@@ -21,6 +22,9 @@ Manage `firewalld` installation and service state, with optional kernel paramete
 - External roles (installed via `requirements.yml`):
   - `ansible-role-pkg-management` (Git)
   - `ansible-role-kernel-configuration` (Git)
+
+- When managing SELinux, ensure SELinux tooling is available on targets:
+  - `python3-libsemanage` (or `libsemanage-python` on older distros)
 
 Install with:
 
@@ -40,6 +44,11 @@ ansible-galaxy install -r requirements.yml
 - `firewalld_manage_kernel` (bool): Whether to manage kernel modules/sysctl needed by firewalld. Default: `true`.
 - `firewalld_required_kernel_modules` (list): Modules to ensure loaded. Default: `[nf_conntrack, nf_tables]`.
 - `firewalld_kernel_sysctl` (dict): Sysctl to apply (key/value). Default: `{}`.
+- `firewalld_manage_selinux` (bool): Whether to manage SELinux. Default: `false`.
+- `firewalld_selinux_state` (string|null): Desired SELinux state (`enforcing`, `permissive`, `disabled`). Default: `null` (no change).
+- `firewalld_selinux_policy` (string|null): SELinux policy name (e.g., `targeted`). Default: `null` (no change).
+- `firewalld_selinux_booleans` (list of dict): SELinux booleans to toggle.
+  - Keys: `name` (boolean), `state` (`true`/`false`, default `true`), `persistent` (`true`/`false`, default `true`).
 - `firewalld_service_name` (string): Service name. Default: `firewalld`.
 - `firewalld_required_packages_map` (dict): Per OS-family package mapping. Default includes `firewalld` for Debian/Ubuntu/RedHat/Rocky/Fedora.
 - `firewalld_required_packages` (list): Resolved packages for the current host using `ansible_os_family`. Default: `['firewalld']` when no mapping exists.
@@ -93,7 +102,7 @@ Defined in `requirements.yml`:
 
 Collections:
 
-- `ansible.posix` (used for `ansible.posix.firewalld` and `ansible.posix.firewalld_info`). Install with: `ansible-galaxy collection install ansible.posix` if not present.
+- `ansible.posix` (used for `ansible.posix.firewalld`, `ansible.posix.selinux`, `ansible.posix.seboolean`, and `ansible.posix.firewalld_info`). Install with: `ansible-galaxy collection install ansible.posix` if not present.
 
 ## Example Playbook
 
@@ -144,6 +153,22 @@ Collections:
         # Port forwarding
         firewalld_forward_ports:
           - { zone: public, port: "8080", proto: "tcp", toport: "80", toaddr: "10.0.0.10" }
+```
+
+### Example: Manage SELinux
+
+```
+- hosts: all
+  become: true
+  roles:
+    - role: iamenr0s.ansible_role_firewalld
+      vars:
+        firewalld_manage_selinux: true
+        firewalld_selinux_state: enforcing
+        firewalld_selinux_policy: targeted
+        firewalld_selinux_booleans:
+          - { name: httpd_can_network_connect, state: true, persistent: true }
+          - { name: nis_enabled, state: false }
 ```
 
 ## Troubleshooting
