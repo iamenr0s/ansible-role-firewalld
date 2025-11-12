@@ -66,8 +66,8 @@
 - name: Optionally manage SELinux booleans
   ansible.posix.seboolean:
     name: "{{ item.name }}"
-    state: {{ item.state | default(true) }}
-    persistent: {{ item.persistent | default(true) }}
+    state: "{{ item.state | default(true) }}"
+    persistent: "{{ item.persistent | default(true) }}"
   loop: "{{ firewalld_selinux_booleans }}"
   when: firewalld_manage_selinux | bool and (firewalld_selinux_booleans | length > 0) and ((ansible_facts.selinux is defined) or (ansible_selinux is defined))
 
