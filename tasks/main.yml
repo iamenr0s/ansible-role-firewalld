@@ -35,6 +35,42 @@
         pkg_state: present
       when: (firewalld_missing_packages | default([]) | length > 0)
 
+- name: Resolve and install SELinux tooling when managing SELinux
+  when: firewalld_manage_selinux | bool and (ansible_pkg_mgr is defined) and (ansible_pkg_mgr | default('unknown')) != 'unknown'
+  block:
+    - name: Compute missing SELinux packages
+      ansible.builtin.set_fact:
+        selinux_missing_packages: >-
+          {{ firewalld_selinux_required_packages
+             | reject('in', (ansible_facts.packages | default({})).keys() | list)
+             | list }}
+  rescue:
+    - name: Fallback when package facts unavailable for SELinux
+      ansible.builtin.set_fact:
+        selinux_missing_packages: "{{ firewalld_selinux_required_packages }}"
+  always:
+    - name: Install missing SELinux packages via package management role
+      ansible.builtin.include_role:
+        name: ansible-role-pkg-management
+      vars:
+        pkg_list: "{{ selinux_missing_packages }}"
+        pkg_state: present
+      when: (selinux_missing_packages | default([]) | length > 0)
+
+- name: Optionally manage SELinux state
+  ansible.posix.selinux:
+    policy: "{{ firewalld_selinux_policy | default(omit) }}"
+    state: "{{ firewalld_selinux_state | default(omit) }}"
+  when: firewalld_manage_selinux | bool and ((ansible_facts.selinux is defined) or (ansible_selinux is defined))
+
+- name: Optionally manage SELinux booleans
+  ansible.posix.seboolean:
+    name: "{{ item.name }}"
+    state: {{ item.state | default(true) }}
+    persistent: {{ item.persistent | default(true) }}
+  loop: "{{ firewalld_selinux_booleans }}"
+  when: firewalld_manage_selinux | bool and (firewalld_selinux_booleans | length > 0) and ((ansible_facts.selinux is defined) or (ansible_selinux is defined))
+
 - name: Gather service facts
   ansible.builtin.service_facts:
 
