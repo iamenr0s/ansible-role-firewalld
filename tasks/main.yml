@@ -3,7 +3,7 @@
 # Role - Main Tasks
 - name: Optionally ensure kernel modules and sysctl for firewalld
   ansible.builtin.include_role:
-    name: ansible-role-kernel-configuration
+    name: iamenr0s.ansible_role_kernel_configuration
   vars:
     kernel_modules: "{{ firewalld_required_kernel_modules }}"
     kernel_sysctl: "{{ firewalld_kernel_sysctl }}"
@@ -29,7 +29,7 @@
   always:
     - name: Install missing packages via package management role
       ansible.builtin.include_role:
-        name: ansible-role-pkg-management
+        name: iamenr0s.ansible_role_pkg_management
       vars:
         pkg_list: "{{ firewalld_missing_packages }}"
         pkg_state: present
@@ -51,7 +51,7 @@
   always:
     - name: Install missing SELinux packages via package management role
       ansible.builtin.include_role:
-        name: ansible-role-pkg-management
+        name: iamenr0s.ansible_role_pkg_management
       vars:
         pkg_list: "{{ selinux_missing_packages }}"
         pkg_state: present
