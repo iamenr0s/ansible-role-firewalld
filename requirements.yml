@@ -7,13 +7,5 @@ collections:
   - name: ansible.posix
 
 roles:
-  # Package management role (Git)
-  - name: ansible-role-pkg-management
-    src: https://github.com/iamenr0s/ansible-role-pkg-management.git
-    scm: git
-
-  # Kernel configuration role (Git). If you publish to Galaxy,
-  # replace src with the Galaxy name (e.g., iamenr0s.kernel_configuration)
-  - name: ansible-role-kernel-configuration
-    src: https://github.com/iamenr0s/ansible-role-kernel-configuration.git
-    scm: git
+  - name: iamenr0s.ansible_role_pkg_management
+  - name: iamenr0s.ansible_role_kernel_configuration
