@@ -36,14 +36,19 @@ firewalld_service_name: firewalld
 firewalld_required_packages_map:
   Debian:
     - firewalld
+    - python3-firewall
   Ubuntu:
     - firewalld
+    - python3-firewall
   RedHat:
     - firewalld
+    - python3-firewall
   Rocky:
     - firewalld
+    - python3-firewall
   Fedora:
     - firewalld
+    - python3-firewall
 
 # Resolved package list for current host
 firewalld_required_packages: "{{ firewalld_required_packages_map[ansible_os_family] | default(['firewalld']) }}"
