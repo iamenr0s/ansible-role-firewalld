@@ -76,7 +76,13 @@
 
 - name: Set firewalld service availability flag
   ansible.builtin.set_fact:
-    firewalld_service_available: "{{ (ansible_facts.services is defined) and (firewalld_service_name in ansible_facts.services) }}"
+    firewalld_service_available: >-
+      {{
+        (ansible_facts.services is defined) and (
+          (firewalld_service_name in ansible_facts.services) or
+          ((firewalld_service_name ~ '.service') in ansible_facts.services)
+        )
+      }}
 
 - name: Ensure firewalld service is enabled and running
   ansible.builtin.service:
