@@ -3,6 +3,8 @@
 - name: Converge
   hosts: all
   gather_facts: true
+  vars:
+    ansible_python_interpreter: /usr/bin/python3
 
   roles:
     - role: iamenr0s.ansible_role_firewalld
