@@ -1,0 +1,11 @@
+---
+
+# Ansible Requirements for firewalld role
+# Install with: ansible-galaxy install -r requirements.yml
+
+collections:
+  - name: ansible.posix
+
+roles:
+  - name: iamenr0s.ansible_role_pkg_management
+  - name: iamenr0s.ansible_role_kernel_configuration

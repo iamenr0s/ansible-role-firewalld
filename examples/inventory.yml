@@ -1,0 +1,23 @@
+---
+
+# Example Inventory: Firewalld Role
+
+all:
+  hosts:
+    firewall-host-01:
+      ansible_host: 192.168.50.10
+    firewall-host-02:
+      ansible_host: 192.168.50.11
+
+  vars:
+    ansible_user: ansible
+    # Uncomment and set if python3 path differs on target
+    # ansible_python_interpreter: /usr/bin/python3
+
+  children:
+    dmz:
+      hosts:
+        firewall-host-01:
+    internal:
+      hosts:
+        firewall-host-02:

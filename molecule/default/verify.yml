@@ -1,0 +1,76 @@
+---
+
+- name: Verify
+  hosts: all
+  gather_facts: false
+  become: true
+
+  tasks:
+    - name: Gather service facts
+      ansible.builtin.service_facts:
+
+    - name: Assert firewalld service is running
+      ansible.builtin.assert:
+        that:
+          - >-
+            ('firewalld' in ansible_facts.services and
+             ansible_facts.services['firewalld'].state == 'running') or
+            ('firewalld.service' in ansible_facts.services and
+             ansible_facts.services['firewalld.service'].state == 'running')
+        fail_msg: "firewalld service is not running"
+        success_msg: "firewalld service is running"
+
+    - name: Gather firewalld zone info
+      ansible.posix.firewalld_info:
+        zones:
+          - public
+      register: fw_info
+
+    - name: Assert public zone exists in firewalld info
+      ansible.builtin.assert:
+        that:
+          - fw_info.firewalld_info.zones.public is defined
+        fail_msg: "public zone not found in firewalld_info output"
+        success_msg: "public zone is present"
+
+    - name: Assert ssh service is enabled in public zone
+      ansible.builtin.assert:
+        that:
+          - "'ssh' in fw_info.firewalld_info.zones.public.services"
+        fail_msg: "ssh service not found in public zone"
+        success_msg: "ssh service is present in public zone"
+
+    - name: Assert dhcpv6-client service is disabled in public zone
+      ansible.builtin.assert:
+        that:
+          - "'dhcpv6-client' not in fw_info.firewalld_info.zones.public.services"
+        fail_msg: "dhcpv6-client should be disabled but is present in public zone"
+        success_msg: "dhcpv6-client is correctly absent from public zone"
+
+    - name: Assert 8080/tcp port is open in public zone
+      ansible.builtin.assert:
+        that:
+          - "'8080/tcp' in fw_info.firewalld_info.zones.public.ports"
+        fail_msg: "port 8080/tcp not found in public zone"
+        success_msg: "port 8080/tcp is open in public zone"
+
+    - name: Assert rich rule for 10.0.0.0/8 is present in public zone
+      ansible.builtin.assert:
+        that:
+          - fw_info.firewalld_info.zones.public.rich_rules | select('search', '10.0.0.0/8') | list | length > 0
+        fail_msg: "Rich rule for 10.0.0.0/8 not found in public zone"
+        success_msg: "Rich rule for 10.0.0.0/8 is present in public zone"
+
+    - name: Assert source 192.168.0.0/24 is present in public zone
+      ansible.builtin.assert:
+        that:
+          - "'192.168.0.0/24' in fw_info.firewalld_info.zones.public.sources"
+        fail_msg: "source 192.168.0.0/24 not found in public zone"
+        success_msg: "source 192.168.0.0/24 is present in public zone"
+
+    - name: Assert masquerade is enabled in public zone
+      ansible.builtin.assert:
+        that:
+          - fw_info.firewalld_info.zones.public.masquerade == true
+        fail_msg: "masquerade is not enabled in public zone"
+        success_msg: "masquerade is enabled in public zone"
