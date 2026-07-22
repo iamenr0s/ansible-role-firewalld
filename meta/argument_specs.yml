@@ -1,0 +1,157 @@
+---
+
+argument_specs:
+  main:
+    short_description: >-
+      Manages firewalld installation, service state, zone configuration, and
+      optional kernel/SELinux management on Debian/Ubuntu and RHEL-family
+      (AlmaLinux/RockyLinux/Fedora) hosts.
+    options:
+      firewalld_manage_kernel:
+        description: Whether to manage kernel modules/sysctl needed by firewalld via the kernel configuration role.
+        type: bool
+        default: true
+      firewalld_manage_selinux:
+        description: Whether to manage SELinux state and booleans.
+        type: bool
+        default: false
+      firewalld_selinux_state:
+        description: Desired SELinux state (`enforcing`, `permissive`, `disabled`). No change when unset.
+        type: str
+        default: null
+      firewalld_selinux_policy:
+        description: SELinux policy name (e.g. `targeted`). No change when unset.
+        type: str
+        default: null
+      firewalld_selinux_booleans:
+        description: SELinux booleans to toggle when `firewalld_manage_selinux` is true.
+        type: list
+        elements: dict
+        default: []
+      firewalld_selinux_required_packages_map:
+        description: Per OS-family SELinux tooling packages installed when `firewalld_manage_selinux` is true.
+        type: dict
+        default:
+          Debian: []
+          Ubuntu: []
+          RedHat:
+            - python3-libsemanage
+          Rocky:
+            - python3-libsemanage
+          Fedora:
+            - python3-libsemanage
+      firewalld_selinux_required_packages:
+        description: Resolved SELinux packages for the current host, computed from `firewalld_selinux_required_packages_map`.
+        type: list
+        elements: str
+      firewalld_required_kernel_modules:
+        description: Kernel modules commonly needed for modern nftables-based firewalld.
+        type: list
+        elements: str
+        default:
+          - nf_conntrack
+          - nf_tables
+      firewalld_kernel_sysctl:
+        description: Optional sysctl settings applied via the kernel configuration role.
+        type: dict
+        default: {}
+      firewalld_service_name:
+        description: Name of the firewalld service.
+        type: str
+        default: firewalld
+      firewalld_required_packages_map:
+        description: Per OS-family package requirements for firewalld itself.
+        type: dict
+        default:
+          Debian:
+            - firewalld
+            - python3-firewall
+          Ubuntu:
+            - firewalld
+            - python3-firewall
+          RedHat:
+            - firewalld
+            - python3-firewall
+          Rocky:
+            - firewalld
+            - python3-firewall
+          Fedora:
+            - firewalld
+            - python3-firewall
+      firewalld_required_packages:
+        description: Resolved package list for the current host, computed from `firewalld_required_packages_map`.
+        type: list
+        elements: str
+      firewalld_zones_present:
+        description: Zones to ensure present (permanent).
+        type: list
+        elements: str
+        default: []
+      firewalld_reload_after_zone_changes:
+        description: Whether to reload firewalld after zone creation changes.
+        type: bool
+        default: true
+      firewalld_services:
+        description: >-
+          Services to manage per zone. Each item supports `name`, `zone`
+          (default `public`), `state` (`enabled`/`disabled`, default
+          `enabled`), `permanent` (default `true`), `immediate` (default
+          `false`).
+        type: list
+        elements: dict
+        default: []
+      firewalld_ports:
+        description: >-
+          Ports to manage per zone (e.g. `8080/tcp` or `161-162/udp`). Each
+          item supports `port`, `zone` (default `public`), `state`,
+          `permanent`, `immediate`.
+        type: list
+        elements: dict
+        default: []
+      firewalld_rich_rules:
+        description: >-
+          Rich rules to manage per zone. Each item supports `rich_rule`
+          (full rule string), `zone` (default `public`), `state`,
+          `permanent`, `immediate`.
+        type: list
+        elements: dict
+        default: []
+      firewalld_sources:
+        description: >-
+          Source CIDRs to manage per zone. Each item supports `source`,
+          `zone`, `state` (default `enabled`), `permanent` (default `true`).
+        type: list
+        elements: dict
+        default: []
+      firewalld_interfaces:
+        description: >-
+          Interfaces to manage per zone. Each item supports `interface`,
+          `zone`, `state` (default `enabled`), `permanent` (default `true`).
+        type: list
+        elements: dict
+        default: []
+      firewalld_masquerade:
+        description: >-
+          Masquerade settings per zone. Each item supports `zone`, `state`
+          (default `enabled`), `permanent` (default `true`).
+        type: list
+        elements: dict
+        default: []
+      firewalld_icmp_blocks:
+        description: >-
+          ICMP blocks per zone. Each item supports `name` (ICMP type, e.g.
+          `echo-request`), `zone`, `state` (default `enabled`), `permanent`
+          (default `true`).
+        type: list
+        elements: dict
+        default: []
+      firewalld_forward_ports:
+        description: >-
+          Port forwarding rules per zone. Each item supports `zone`
+          (default `public`), `state` (default `enabled`), `permanent`
+          (default `true`), `immediate` (default `false`), `port` (source
+          port), `proto` (`tcp`/`udp`), `toport` (destination port),
+          `toaddr` (optional destination address).
+        type: list
+        elements: dict
+        default: []

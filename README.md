@@ -1,4 +1,4 @@
-[![Molecule](https://github.com/iamenr0s/ansible-role-firewalld/actions/workflows/molecule.yml/badge.svg)](https://github.com/iamenr0s/ansible-role-firewalld/actions/workflows/molecule.yml) [![Release](https://github.com/iamenr0s/ansible-role-firewalld/actions/workflows/release.yml/badge.svg)](https://github.com/iamenr0s/ansible-role-firewalld/actions/workflows/release.yml) ![Ansible Role](https://img.shields.io/ansible/role/d/iamenr0s/ansible_role_cri_o) [![CodeFactor](https://www.codefactor.io/repository/github/iamenr0s/ansible-role-firewalld/badge)](https://www.codefactor.io/repository/github/iamenr0s/ansible-role-firewalld)
+[![Molecule](https://github.com/iamenr0s/ansible-role-firewalld/actions/workflows/molecule.yml/badge.svg)](https://github.com/iamenr0s/ansible-role-firewalld/actions/workflows/molecule.yml) ![Ansible Role](https://img.shields.io/ansible/role/d/iamenr0s/ansible_role_firewalld) [![CodeFactor](https://www.codefactor.io/repository/github/iamenr0s/ansible-role-firewalld/badge)](https://www.codefactor.io/repository/github/iamenr0s/ansible-role-firewalld)
 
 # Ansible Role: Firewalld
 
@@ -34,10 +34,10 @@ ansible-galaxy install -r requirements.yml
 
 ## Supported Platforms
 
-- Ubuntu (20.04, 22.04+)
-- Debian (11, 12+)
+- Ubuntu (22.04, 24.04)
+- Debian (12, 13)
 - EL/RHEL/Rocky/Alma (8, 9, 10)
-- Fedora (39+)
+- Fedora (42, 43, 44)
 
 ## Role Variables
 
