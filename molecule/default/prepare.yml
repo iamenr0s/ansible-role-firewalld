@@ -30,7 +30,6 @@
 
     - name: Gather facts now that Python is available
       ansible.builtin.setup:
-      become: true
 
     - name: Update apt cache on Debian/Ubuntu when apt is available
       ansible.builtin.apt:
