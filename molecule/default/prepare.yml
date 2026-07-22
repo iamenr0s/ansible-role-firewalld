@@ -67,4 +67,5 @@
         name: dbus.socket
         enabled: true
         state: started
-      when: ansible_facts['service_mgr'] == 'systemd'
+      # Debian/Ubuntu images don't ship dbus at prepare time
+      when: ansible_facts['service_mgr'] == 'systemd' and ansible_facts['os_family'] == 'RedHat'
