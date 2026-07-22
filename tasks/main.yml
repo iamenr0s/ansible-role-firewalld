@@ -105,15 +105,8 @@
     state: present
     permanent: true
   loop: "{{ firewalld_zones_present }}"
-  register: firewalld_zone_create
   when: firewalld_zones_present | length > 0 and firewalld_service_available | bool
-  tags: firewalld
-
-- name: Reload firewalld after zone creation
-  ansible.builtin.service:
-    name: "{{ firewalld_service_name }}"
-    state: reloaded
-  when: firewalld_reload_after_zone_changes | bool and (firewalld_zone_create is changed) and firewalld_service_available | bool
+  notify: Reload firewalld
   tags: firewalld
 
 - name: Manage firewalld services
@@ -125,6 +118,7 @@
     immediate: "{{ item.immediate | default(false) }}"
   loop: "{{ firewalld_services }}"
   when: firewalld_services | length > 0 and firewalld_service_available | bool
+  notify: Reload firewalld
   tags: firewalld
 
 - name: Manage firewalld ports
@@ -136,6 +130,7 @@
     immediate: "{{ item.immediate | default(false) }}"
   loop: "{{ firewalld_ports }}"
   when: firewalld_ports | length > 0 and firewalld_service_available | bool
+  notify: Reload firewalld
   tags: firewalld
 
 - name: Manage firewalld rich rules
@@ -147,6 +142,7 @@
     immediate: "{{ item.immediate | default(false) }}"
   loop: "{{ firewalld_rich_rules }}"
   when: firewalld_rich_rules | length > 0 and firewalld_service_available | bool
+  notify: Reload firewalld
   tags: firewalld
 
 - name: Manage firewalld sources
@@ -157,6 +153,7 @@
     permanent: "{{ item.permanent | default(true) }}"
   loop: "{{ firewalld_sources }}"
   when: firewalld_sources | length > 0 and firewalld_service_available | bool
+  notify: Reload firewalld
   tags: firewalld
 
 - name: Manage firewalld interfaces
@@ -167,6 +164,7 @@
     permanent: "{{ item.permanent | default(true) }}"
   loop: "{{ firewalld_interfaces }}"
   when: firewalld_interfaces | length > 0 and firewalld_service_available | bool
+  notify: Reload firewalld
   tags: firewalld
 
 - name: Manage masquerade settings
@@ -177,6 +175,7 @@
     permanent: "{{ item.permanent | default(true) }}"
   loop: "{{ firewalld_masquerade }}"
   when: firewalld_masquerade | length > 0 and firewalld_service_available | bool
+  notify: Reload firewalld
   tags: firewalld
 
 - name: Manage ICMP blocks
@@ -187,6 +186,7 @@
     permanent: "{{ item.permanent | default(true) }}"
   loop: "{{ firewalld_icmp_blocks }}"
   when: firewalld_icmp_blocks | length > 0 and firewalld_service_available | bool
+  notify: Reload firewalld
   tags: firewalld
 
 - name: Manage port forwarding rules
@@ -202,4 +202,9 @@
         toaddr: "{{ item.toaddr | default('') }}"
   loop: "{{ firewalld_forward_ports }}"
   when: firewalld_forward_ports | length > 0 and firewalld_service_available | bool
+  notify: Reload firewalld
+  tags: firewalld
+
+- name: Flush handlers so firewalld reload takes effect within this role
+  ansible.builtin.meta: flush_handlers
   tags: firewalld

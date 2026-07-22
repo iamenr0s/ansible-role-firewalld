@@ -88,7 +88,7 @@ argument_specs:
         elements: str
         default: []
       firewalld_reload_after_zone_changes:
-        description: Whether to reload firewalld after zone creation changes.
+        description: Whether to reload firewalld after any permanent configuration change (zones, services, ports, rules, etc).
         type: bool
         default: true
       firewalld_services:

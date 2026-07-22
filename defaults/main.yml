@@ -56,7 +56,10 @@ firewalld_required_packages: "{{ firewalld_required_packages_map[ansible_facts['
 # Zones to ensure present (permanent)
 firewalld_zones_present: []
 
-# Control reloading after zone changes
+# Control whether firewalld is reloaded after any permanent config change
+# (zones, services, ports, rich rules, sources, interfaces, masquerade,
+# ICMP blocks, forward ports). Without a reload, permanent-only changes
+# never reach the running daemon's active configuration.
 firewalld_reload_after_zone_changes: true
 
 # Manage services in zones

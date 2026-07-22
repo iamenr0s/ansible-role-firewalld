@@ -53,7 +53,7 @@ ansible-galaxy install -r requirements.yml
 - `firewalld_required_packages_map` (dict): Per OS-family package mapping. Default includes `firewalld` for Debian/Ubuntu/RedHat/Rocky/Fedora.
 - `firewalld_required_packages` (list): Resolved packages for the current host using `ansible_os_family`. Default: `['firewalld']` when no mapping exists.
 - `firewalld_zones_present` (list): Zones to create permanently. Default: `[]`.
-- `firewalld_reload_after_zone_changes` (bool): Reload service after zone creation if changed. Default: `true`.
+- `firewalld_reload_after_zone_changes` (bool): Reload firewalld after any permanent configuration change (zones, services, ports, rules, sources, interfaces, masquerade, ICMP blocks, forward ports) so the change takes effect on the running daemon. Default: `true`.
 - `firewalld_services` (list of dict): Services per zone.
   - Keys: `name`, `zone` (default `public`), `state` (`enabled`/`disabled`, default `enabled`), `permanent` (default `true`), `immediate` (default `false`).
 - `firewalld_ports` (list of dict): Ports per zone.
@@ -175,9 +175,9 @@ Collections:
 
 - Ensure external roles are installed via `ansible-galaxy install -r requirements.yml`.
 - If the kernel role uses different variable names, map them in `tasks/main.yml` vars.
-- When creating zones, permanent operations are required; reloads are handled via `firewalld_reload_after_zone_changes`.
+- Zone/service/port/rule changes are permanent by default; the role reloads firewalld once at the end (via a handler) whenever anything changed, controlled by `firewalld_reload_after_zone_changes`.
 - Port forwarding accepts only one forward entry per operation; this role loops one-by-one.
-- Immediate changes on newly created zones require a reload first; the role handles zone reloads when enabled.
+- Set `immediate: true` on individual items if you need a specific rule to apply without waiting for the end-of-role reload.
 
 ## Installation
 

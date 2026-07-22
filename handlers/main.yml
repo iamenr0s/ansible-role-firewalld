@@ -1,3 +1,8 @@
 ---
 
 # Role - Handlers
+- name: Reload firewalld
+  ansible.builtin.service:
+    name: "{{ firewalld_service_name }}"
+    state: reloaded
+  when: firewalld_reload_after_zone_changes | bool
