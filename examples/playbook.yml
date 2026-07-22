@@ -1,7 +1,8 @@
 ---
 # Example Playbook: Firewalld Role Usage
 
-- hosts: all
+- name: Configure firewalld
+  hosts: all
   become: true
   roles:
     - role: iamenr0s.ansible_role_firewalld

@@ -8,9 +8,11 @@
     kernel_modules: "{{ firewalld_required_kernel_modules }}"
     kernel_sysctl: "{{ firewalld_kernel_sysctl }}"
   when: firewalld_manage_kernel | bool
+  tags: firewalld
 
 - name: Resolve and install required packages
-  when: (ansible_pkg_mgr is defined) and (ansible_pkg_mgr | default('unknown')) != 'unknown'
+  when: (ansible_facts['pkg_mgr'] is defined) and (ansible_facts['pkg_mgr'] | default('unknown')) != 'unknown'
+  tags: firewalld
   block:
     - name: Gather installed package facts
       ansible.builtin.package_facts:
@@ -36,7 +38,8 @@
       when: (firewalld_missing_packages | default([]) | length > 0)
 
 - name: Resolve and install SELinux tooling when managing SELinux
-  when: firewalld_manage_selinux | bool and (ansible_pkg_mgr is defined) and (ansible_pkg_mgr | default('unknown')) != 'unknown'
+  when: firewalld_manage_selinux | bool and (ansible_facts['pkg_mgr'] is defined) and (ansible_facts['pkg_mgr'] | default('unknown')) != 'unknown'
+  tags: firewalld
   block:
     - name: Compute missing SELinux packages
       ansible.builtin.set_fact:
@@ -61,7 +64,8 @@
   ansible.posix.selinux:
     policy: "{{ firewalld_selinux_policy | default(omit) }}"
     state: "{{ firewalld_selinux_state | default(omit) }}"
-  when: firewalld_manage_selinux | bool and ((ansible_facts.selinux is defined) or (ansible_selinux is defined))
+  when: firewalld_manage_selinux | bool and (ansible_facts.selinux is defined)
+  tags: firewalld
 
 - name: Optionally manage SELinux booleans
   ansible.posix.seboolean:
@@ -69,10 +73,12 @@
     state: "{{ item.state | default(true) }}"
     persistent: "{{ item.persistent | default(true) }}"
   loop: "{{ firewalld_selinux_booleans }}"
-  when: firewalld_manage_selinux | bool and (firewalld_selinux_booleans | length > 0) and ((ansible_facts.selinux is defined) or (ansible_selinux is defined))
+  when: firewalld_manage_selinux | bool and (firewalld_selinux_booleans | length > 0) and (ansible_facts.selinux is defined)
+  tags: firewalld
 
 - name: Gather service facts
   ansible.builtin.service_facts:
+  tags: firewalld
 
 - name: Set firewalld service availability flag
   ansible.builtin.set_fact:
@@ -83,6 +89,7 @@
           ((firewalld_service_name ~ '.service') in ansible_facts.services)
         )
       }}
+  tags: firewalld
 
 - name: Ensure firewalld service is enabled and running
   ansible.builtin.service:
@@ -90,6 +97,7 @@
     state: started
     enabled: true
   when: firewalld_service_available | bool
+  tags: firewalld
 
 - name: Ensure requested zones are present (permanent)
   ansible.posix.firewalld:
@@ -99,12 +107,14 @@
   loop: "{{ firewalld_zones_present }}"
   register: firewalld_zone_create
   when: firewalld_zones_present | length > 0 and firewalld_service_available | bool
+  tags: firewalld
 
 - name: Reload firewalld after zone creation
   ansible.builtin.service:
     name: "{{ firewalld_service_name }}"
     state: reloaded
   when: firewalld_reload_after_zone_changes | bool and (firewalld_zone_create is changed) and firewalld_service_available | bool
+  tags: firewalld
 
 - name: Manage firewalld services
   ansible.posix.firewalld:
@@ -115,6 +125,7 @@
     immediate: "{{ item.immediate | default(false) }}"
   loop: "{{ firewalld_services }}"
   when: firewalld_services | length > 0 and firewalld_service_available | bool
+  tags: firewalld
 
 - name: Manage firewalld ports
   ansible.posix.firewalld:
@@ -125,6 +136,7 @@
     immediate: "{{ item.immediate | default(false) }}"
   loop: "{{ firewalld_ports }}"
   when: firewalld_ports | length > 0 and firewalld_service_available | bool
+  tags: firewalld
 
 - name: Manage firewalld rich rules
   ansible.posix.firewalld:
@@ -135,6 +147,7 @@
     immediate: "{{ item.immediate | default(false) }}"
   loop: "{{ firewalld_rich_rules }}"
   when: firewalld_rich_rules | length > 0 and firewalld_service_available | bool
+  tags: firewalld
 
 - name: Manage firewalld sources
   ansible.posix.firewalld:
@@ -144,6 +157,7 @@
     permanent: "{{ item.permanent | default(true) }}"
   loop: "{{ firewalld_sources }}"
   when: firewalld_sources | length > 0 and firewalld_service_available | bool
+  tags: firewalld
 
 - name: Manage firewalld interfaces
   ansible.posix.firewalld:
@@ -153,6 +167,7 @@
     permanent: "{{ item.permanent | default(true) }}"
   loop: "{{ firewalld_interfaces }}"
   when: firewalld_interfaces | length > 0 and firewalld_service_available | bool
+  tags: firewalld
 
 - name: Manage masquerade settings
   ansible.posix.firewalld:
@@ -162,6 +177,7 @@
     permanent: "{{ item.permanent | default(true) }}"
   loop: "{{ firewalld_masquerade }}"
   when: firewalld_masquerade | length > 0 and firewalld_service_available | bool
+  tags: firewalld
 
 - name: Manage ICMP blocks
   ansible.posix.firewalld:
@@ -171,6 +187,7 @@
     permanent: "{{ item.permanent | default(true) }}"
   loop: "{{ firewalld_icmp_blocks }}"
   when: firewalld_icmp_blocks | length > 0 and firewalld_service_available | bool
+  tags: firewalld
 
 - name: Manage port forwarding rules
   ansible.posix.firewalld:
@@ -185,3 +202,4 @@
         toaddr: "{{ item.toaddr | default('') }}"
   loop: "{{ firewalld_forward_ports }}"
   when: firewalld_forward_ports | length > 0 and firewalld_service_available | bool
+  tags: firewalld

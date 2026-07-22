@@ -18,7 +18,7 @@ firewalld_selinux_required_packages_map:
     - python3-libsemanage
   Fedora:
     - python3-libsemanage
-firewalld_selinux_required_packages: "{{ firewalld_selinux_required_packages_map[ansible_os_family] | default([]) }}"
+firewalld_selinux_required_packages: "{{ firewalld_selinux_required_packages_map[ansible_facts['os_family']] | default([]) }}"
 
 # Kernel modules commonly needed for modern nftables-based firewalld
 # Adjust per environment as needed
@@ -51,7 +51,7 @@ firewalld_required_packages_map:
     - python3-firewall
 
 # Resolved package list for current host
-firewalld_required_packages: "{{ firewalld_required_packages_map[ansible_os_family] | default(['firewalld']) }}"
+firewalld_required_packages: "{{ firewalld_required_packages_map[ansible_facts['os_family']] | default(['firewalld']) }}"
 
 # Zones to ensure present (permanent)
 firewalld_zones_present: []
