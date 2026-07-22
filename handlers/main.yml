@@ -6,3 +6,12 @@
     name: "{{ firewalld_service_name }}"
     state: reloaded
   when: firewalld_reload_after_zone_changes | bool
+  notify: Ensure firewalld is running after reload
+
+# firewalld can crash while re-applying rules on SIGHUP in some container
+# environments (seen on fedora44 in CI); the role's contract is a running
+# service, so re-assert it after every reload.
+- name: Ensure firewalld is running after reload
+  ansible.builtin.service:
+    name: "{{ firewalld_service_name }}"
+    state: started
