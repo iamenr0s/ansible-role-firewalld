@@ -24,6 +24,10 @@
         zones:
           - public
       register: fw_info
+      # ride out transient dbus-broker/firewalld restarts (see prepare.yml)
+      retries: 5
+      delay: 3
+      until: fw_info is succeeded
 
     - name: Assert public zone exists in firewalld info
       ansible.builtin.assert:
