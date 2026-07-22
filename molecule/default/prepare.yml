@@ -55,30 +55,16 @@
         state: present
       when: ansible_facts['os_family'] == "RedHat" and (ansible_facts['pkg_mgr'] is defined) and (ansible_facts['pkg_mgr'] | default('unknown')) != 'unknown'
 
-    # dbus-broker intermittently dies in the fedora44 (rawhide) container,
-    # taking firewalld's bus connection with it. Self-heal via systemd
-    # drop-ins so a transient crash doesn't fail converge/verify.
-    - name: Create systemd override directories for dbus-broker and firewalld
-      ansible.builtin.file:
-        path: "/etc/systemd/system/{{ item }}.service.d"
-        state: directory
-        mode: "0755"
-      loop:
-        - dbus-broker
-        - firewalld
-
-    - name: Restart dbus-broker and firewalld on failure
-      ansible.builtin.copy:
-        dest: "/etc/systemd/system/{{ item }}.service.d/molecule-restart.conf"
-        content: |
-          [Service]
-          Restart=on-failure
-          RestartSec=1
-        mode: "0644"
-      loop:
-        - dbus-broker
-        - firewalld
-
-    - name: Reload systemd to pick up overrides
+    # The container images ship dbus.socket disabled (preset symlinks are
+    # stripped at image build). Fedora 44's firewalld.service dropped
+    # Requires=dbus.service/Type=dbus in favour of PartOf=dbus.service, so
+    # starting firewalld no longer pulls dbus up, and when the broker exits
+    # the socket vanishes and firewalld is stopped with it. Enabling the
+    # socket restores normal socket activation: the socket path persists and
+    # any client connection re-starts the broker.
+    - name: Ensure dbus.socket is enabled and active
       ansible.builtin.systemd_service:
-        daemon_reload: true
+        name: dbus.socket
+        enabled: true
+        state: started
+      when: ansible_facts['service_mgr'] == 'systemd'
