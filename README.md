@@ -192,12 +192,12 @@ Collections:
   The converge scenario exercises services, ports, rich rules, sources, interfaces, masquerade, ICMP, and forwarding in the `public` zone.
 
 ## License
--------
+
 This project is licensed under the [MIT License](LICENSE).
 
 
 ## Author Information
-------------------
+
 Author: iamenr0s
 
 Galaxy: `iamenr0s.ansible_role_firewalld`
