@@ -50,7 +50,7 @@
     - name: Assert 8080/tcp port is open in public zone
       ansible.builtin.assert:
         that:
-          - "'8080/tcp' in fw_info.firewalld_info.zones.public.ports"
+          - "'8080/tcp' in (fw_info.firewalld_info.zones.public.ports | map('join', '/') | list)"
         fail_msg: "port 8080/tcp not found in public zone"
         success_msg: "port 8080/tcp is open in public zone"
 
