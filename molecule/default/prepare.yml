@@ -35,26 +35,22 @@
       ansible.builtin.apt:
         update_cache: true
         cache_valid_time: 3600
-      become: true
       when: ansible_facts['os_family'] == "Debian" and (ansible_facts['pkg_mgr'] is defined) and (ansible_facts['pkg_mgr'] | default('unknown')) != 'unknown'
 
     - name: Install procps-ng package (RHEL/Fedora/AlmaLinux)
       ansible.builtin.package:
         name: procps-ng
         state: present
-      become: true
       when: ansible_facts['os_family'] == "RedHat" and (ansible_facts['pkg_mgr'] is defined) and (ansible_facts['pkg_mgr'] | default('unknown')) != 'unknown'
 
     - name: Install procps package (Debian/Ubuntu)
       ansible.builtin.package:
         name: procps
         state: present
-      become: true
       when: ansible_facts['os_family'] == "Debian" and (ansible_facts['pkg_mgr'] is defined) and (ansible_facts['pkg_mgr'] | default('unknown')) != 'unknown'
 
     - name: Install python3-rpm package (RHEL/Fedora/AlmaLinux)
       ansible.builtin.package:
         name: python3-rpm
         state: present
-      become: true
       when: ansible_facts['os_family'] == "RedHat" and (ansible_facts['pkg_mgr'] is defined) and (ansible_facts['pkg_mgr'] | default('unknown')) != 'unknown'
