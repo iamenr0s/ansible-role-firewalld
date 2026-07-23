@@ -191,10 +191,20 @@ Collections:
   - `molecule test` for full cycle
   The converge scenario exercises services, ports, rich rules, sources, interfaces, masquerade, ICMP, and forwarding in the `public` zone.
 
+## Contributing
+
+Contributions are welcome — see [CONTRIBUTING.md](CONTRIBUTING.md) for the
+local pipeline commands and pull request checklist. This project follows the
+[Contributor Covenant Code of Conduct](CODE_OF_CONDUCT.md).
+
+## Security
+
+See [SECURITY.md](SECURITY.md) — GitHub private vulnerability reporting, no
+public issues for security bugs.
+
 ## License
 
 This project is licensed under the [MIT License](LICENSE).
-
 
 ## Author Information
 
